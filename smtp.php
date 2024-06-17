@@ -20,6 +20,21 @@
 
 */
 
+function wrap_html($html, $max_length = 950) {
+	$wrapped_lines = [];
+	$lines = explode("\n", $html);
+
+	foreach ($lines as $line) {
+		if (strlen($line) <= $max_length) {
+			$wrapped_lines[] = $line;
+		} else {
+			$wrapped_lines[] = wordwrap($line, $max_length, "\r\n", true);
+		}
+	}
+
+	return implode("\r\n", $wrapped_lines);
+}
+
 //! SMTP plug-in
 class SMTP extends Magic {
 
@@ -188,6 +203,9 @@ class SMTP extends Magic {
 	function send($message,$log=TRUE,$mock=FALSE) {
 		if ($this->scheme=='ssl' && !extension_loaded('openssl'))
 			return FALSE;
+		// Set Line Limit
+		$wrapped_body = wrap_html($message);
+		$message = $wrapped_body;
 		// Message should not be blank
 		if (!$message)
 			user_error(self::E_Blank,E_USER_ERROR);
